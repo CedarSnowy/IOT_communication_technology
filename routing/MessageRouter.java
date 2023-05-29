@@ -156,20 +156,20 @@ public abstract class MessageRouter {
 	 * interval to update the status of transfer(s).
 	 */
 	public void update(){
-		System.out.println("<===========Host Router updating:"+this.getHost()+"===========>");
-		System.out.println("<-----当前未发送消息----->");
-		for (Map.Entry<String,Message> entry : this.messages.entrySet())
-		{
-			Message m = entry.getValue();
-			//if (m.getReceiveTime()==m.getCreationTime() && !World.BROADCAST_MESSAGE.contains(m))
-			if (!World.BROADCAST_MESSAGE.contains(m))
-				System.out.println(entry.getValue());
-		}
-		for (Collection<Application> apps : this.applications.values()) {
-			for (Application app : apps) {
-				app.update(this.host);
-			}
-		}
+//		System.out.println("<===========Host Router updating:"+this.getHost()+"===========>");
+//		System.out.println("<-----当前未发送消息----->");
+//		for (Map.Entry<String,Message> entry : this.messages.entrySet())
+//		{
+//			Message m = entry.getValue();
+//			//if (m.getReceiveTime()==m.getCreationTime() && !World.BROADCAST_MESSAGE.contains(m))
+//			if (!World.BROADCAST_MESSAGE.contains(m))
+//				System.out.println(entry.getValue());
+//		}
+//		for (Collection<Application> apps : this.applications.values()) {
+//			for (Application app : apps) {
+//				app.update(this.host);
+//			}
+//		}
 	}
 
 	/**
@@ -357,7 +357,7 @@ public abstract class MessageRouter {
 		incoming.setReceiveTime(SimClock.getTime());
 
 
-		System.out.println("消息传输完毕："+incoming);
+		//System.out.println("消息传输完毕："+incoming);
 
 		// Pass the message to the application (if any) and get outgoing message
 		Message outgoing = incoming;

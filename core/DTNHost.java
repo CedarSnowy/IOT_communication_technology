@@ -32,6 +32,11 @@ public class DTNHost implements Comparable<DTNHost> {
 	private String name;
 	private List<MessageListener> msgListeners;
 	private List<MovementListener> movListeners;
+
+	public String getName() {
+		return name;
+	}
+
 	private List<NetworkInterface> net;
 	private ModuleCommunicationBus comBus;
 
@@ -492,7 +497,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param m The message to create
 	 */
 	public void createNewMessage(Message m) {
-		System.out.println("产生新消息"+m);
+		//System.out.println("产生新消息"+m);
 		this.router.createNewMessage(m);
 	}
 

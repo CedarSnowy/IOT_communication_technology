@@ -1,23 +1,23 @@
 Scenario.name = my_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval=1
-Scenario.endTime=300
+Scenario.endTime=100
 
 WiFi80211.type=SimpleBroadcastInterface
 WiFi80211.transmitSpeed=1k
-WiFi80211.transmitRange=150
+WiFi80211.transmitRange=1000
 
-Scenario.nrofHostGroups = 4
+Scenario.nrofHostGroups = 6
 Group.bufferSize = 50M
 Group.router = EpidemicRouter
 Group.waitTime = 0,0
-Group.speed=2, 4
+Group.speed=20000, 40000
 Group.nrofInterfaces=1
 Group.interface1=WiFi80211
 
 Group1.groupID=a_
 Group1.nrofHosts = 1
-Group1.movementModel=StationaryMovement
+Group1.movementModel=RandomWalk
 Group1.nodeLocation = 300,300
 
 # Group1.nodeLocation = POINT (356.0413935507689 317.175863384662)
@@ -25,17 +25,27 @@ Group1.nodeLocation = 300,300
 Group2.groupID=b_
 Group2.nrofHosts=1
 Group2.nodeLocation=300,400
-Group2.movementModel=StationaryMovement
+Group2.movementModel=RandomWalk
 
 Group3.groupID=c_
 Group3.nrofHosts=1
 Group3.nodeLocation=400,300
-Group3.movementModel=StationaryMovement
+Group3.movementModel=RandomWalk
 
 Group4.groupID=d_
 Group4.nrofHosts=1
 Group4.nodeLocation=400,400
-Group4.movementModel=StationaryMovement
+Group4.movementModel=RandomWalk
+
+Group5.groupID=AP_1_
+Group5.nrofHosts=1
+Group5.nodeLocation=600,600
+Group5.movementModel=StationaryMovement
+
+Group6.groupID=AP_2_
+Group6.nrofHosts=1
+Group6.nodeLocation=600,800
+Group6.movementModel=StationaryMovement
 
 
 ## Message creation parameters
@@ -53,6 +63,7 @@ Events1.hosts = 0,1
 Events1.tohosts=1,2
 # Message ID prefix
 Events1.prefix = M
+Events1.responsize=75k
 
 Events2.class = MessageEventGenerator
 # (following settings are specific for the MessageEventGenerator class)

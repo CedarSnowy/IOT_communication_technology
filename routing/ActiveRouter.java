@@ -594,89 +594,55 @@ public abstract class ActiveRouter extends MessageRouter {
 	public void update() {
 		super.update();
 
-		if(waitTime>0){
-			waitTime--;
-		}
-
 
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */
-		for (int i=0; i<this.sendingConnections.size(); ) {
-			boolean removeCurrent = false;
-			Connection con = sendingConnections.get(i);
-
-			/*碰撞检测*/
-			if(isTransferring()&&World.LISTEN_BUS>1)
-			{
-				//System.out.println("发生碰撞！！！！！");
-				Message m = con.getMessage();
-				Message.initPath(m);
-
-				/*将该Message从总线上清除*/
-				World.BROADCAST_BUS --;
-				int index = 0;
-				for(int j =0;j<World.BROADCAST_MESSAGE.size();j++)
-				{
-					Message m_bus = World.BROADCAST_MESSAGE.get(j);
-					if (Objects.equals(m.getId(), m_bus.getId())){
-						index = j;
-					}
-				}
-				World.BROADCAST_MESSAGE.remove(index);
-				/*停止发送*/
-				con.abortTransfer();
-				/*放回队列中*/
-				addToMessages(m,false);
-				/*进行退避*/
-				crashTime++;
-				int n = (int) Math.pow(2, crashTime); // 计算出 2^k 的值
-				Random rand = new Random();
-				waitTime = rand.nextInt(n); // 生成一个介于 [0, n) 区间内的整数
-				System.out.println("退避:"+waitTime);
-			}
-
-			/* finalize ready transfers */
-			if (con.isMessageTransferred()) {
-				if (con.getMessage() != null) {
-					transferDone(con);
-					con.finalizeTransfer();
-				} /* else: some other entity aborted transfer */
-				removeCurrent = true;
-			}
-			/* remove connections that have gone down */
-			else if (!con.isUp()) {
-				if (con.getMessage() != null) {
-					transferAborted(con);
-					con.abortTransfer();
-				}
-				removeCurrent = true;
-			}
-
-			if (removeCurrent) {
-				// if the message being sent was holding excess buffer, free it
-				if (this.getFreeBufferSize() < 0) {
-					this.makeRoomForMessage(0);
-				}
-				sendingConnections.remove(i);
-			}
-			else {
-				/* index increase needed only if nothing was removed */
-				i++;
-			}
-		}
-
-		/* time to do a TTL check and drop old messages? Only if not sending */
-		if (SimClock.getTime() - lastTtlCheck >= ttlCheckInterval &&
-				sendingConnections.size() == 0) {
-			dropExpiredMessages();
-			lastTtlCheck = SimClock.getTime();
-		}
-
-		if (energy != null) {
-			/* TODO: add support for other interfaces */
-			NetworkInterface iface = getHost().getInterface(1);
-			energy.update(iface, getHost().getComBus());
-		}
+//		for (int i=0; i<this.sendingConnections.size(); ) {
+//			boolean removeCurrent = false;
+//			Connection con = sendingConnections.get(i);
+//
+//			/* finalize ready transfers */
+//			if (con.isMessageTransferred()) {
+//				if (con.getMessage() != null) {
+//					transferDone(con);
+//					con.finalizeTransfer();
+//				} /* else: some other entity aborted transfer */
+//				removeCurrent = true;
+//			}
+//			/* remove connections that have gone down */
+//			else if (!con.isUp()) {
+//				if (con.getMessage() != null) {
+//					transferAborted(con);
+//					con.abortTransfer();
+//				}
+//				removeCurrent = true;
+//			}
+//
+//			if (removeCurrent) {
+//				// if the message being sent was holding excess buffer, free it
+//				if (this.getFreeBufferSize() < 0) {
+//					this.makeRoomForMessage(0);
+//				}
+//				sendingConnections.remove(i);
+//			}
+//			else {
+//				/* index increase needed only if nothing was removed */
+//				i++;
+//			}
+//		}
+//
+//		/* time to do a TTL check and drop old messages? Only if not sending */
+//		if (SimClock.getTime() - lastTtlCheck >= ttlCheckInterval &&
+//				sendingConnections.size() == 0) {
+//			dropExpiredMessages();
+//			lastTtlCheck = SimClock.getTime();
+//		}
+//
+//		if (energy != null) {
+//			/* TODO: add support for other interfaces */
+//			NetworkInterface iface = getHost().getInterface(1);
+//			energy.update(iface, getHost().getComBus());
+//		}
 
 	}
 

@@ -254,9 +254,15 @@ public class Message implements Comparable<Message> {
 
 	@Override
 	public String toString() {
-		return "Message [from=" + from + ", to=" + to + ", id=" + id
-				+ ", path=" + path + ", timeReceived=" + timeReceived
-				+ ", timeCreated=" + timeCreated + "]";
+		return "Message{" +
+				"from=" + from +
+				", to=" + to +
+				", id='" + id + '\'' +
+				", path=" + path +
+				", timeReceived=" + timeReceived +
+				", timeCreated=" + timeCreated +
+				", requestMsg=" + requestMsg +
+				'}';
 	}
 
 	/**

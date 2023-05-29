@@ -7,8 +7,6 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
-import sun.util.locale.LanguageTag;
-import util.Tuple;
 
 import java.util.*;
 
@@ -16,7 +14,90 @@ import java.util.*;
  * World contains all the nodes and is responsible for updating their
  * location and connections.
  */
+import java.util.Arrays;
+
+
+
+class AccessPoint
+{
+	public Coord location;
+
+	public AccessPoint() {
+	}
+
+	public float Strength;
+
+	public AccessPoint(Coord station, float streng) {
+		this.location = station;
+		Strength = streng;
+	}
+}
 public class World {
+	private static ArrayList<AccessPoint> AP_list= new ArrayList<AccessPoint>();
+	private static final int N = 4;
+	private static final int M = 2;
+
+	public static float [][] SPEED = new float[N][N];
+	private static final float INF = Float.POSITIVE_INFINITY;
+	private float[] labelX, labelY;  // 二分图的节点标号
+	private int[] matchX, matchY;  // 记录二分图中Y部分节点匹配的X部分节点
+
+	public float maxWeightMatching() {
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				labelX[i] = Math.max(labelX[i], SPEED[i][j]);
+			}
+		}
+		for (int i = 0; i < N; i++) {
+			while (true) {
+				boolean[] visX = new boolean[N], visY = new boolean[N];
+				if (dfs(i, visX, visY)) break;
+				float delta = INF;
+				for (int j = 0; j < N; j++) {
+					if (visX[j]) {
+						for (int k = 0; k < N; k++) {
+							if (!visY[k]) {
+								delta = Math.min(delta, labelX[j] + labelY[k] - SPEED[j][k]);
+							}
+						}
+					}
+				}
+				for (int j = 0; j < N; j++) {
+					if (visX[j]) {
+						labelX[j] -= delta;
+					}
+				}
+				for (int j = 0; j < N; j++) {
+					if (visY[j]) {
+						labelY[j] += delta;
+					}
+				}
+			}
+		}
+		float weight = 0;
+		for (int i = 0; i < N; i++) {
+			if (matchX[i] != -1) {
+				weight += SPEED[i][matchX[i]];
+			}
+		}
+		return weight;
+	}
+
+	private boolean dfs(int x, boolean[] visX, boolean[] visY) {
+		visX[x] = true;
+		for (int y = 0; y < N; y++) {
+			if (!visY[y] && Math.abs(labelX[x] + labelY[y] - SPEED[x][y]) < 1e-6) {
+				visY[y] = true;
+				if (matchY[y] == -1 || dfs(matchY[y], visX, visY)) {
+					matchX[x] = y;
+					matchY[y] = x;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/** name space of optimization settings ({@value})*/
 	public static final String OPTIMIZATION_SETTINGS_NS = "Optimization";
 
@@ -65,9 +146,29 @@ public class World {
 	public static int LAST_BROADCAST_BUS = 0;
 	public static int LISTEN_BUS = 0;
 
+
+
 	/**
 	 * Constructor.
 	 */
+
+	void init()
+	{
+		for(int i = 0; i < N; i++) {
+			for(int j = 0; j < N; j++) {
+				SPEED[i][j] =INF;
+			}
+		}
+		labelX = new float[N];
+		labelY = new float[N];
+		Arrays.fill(labelX, -INF);
+		Arrays.fill(labelY, 0);
+		matchX = new int[N];
+		matchY = new int[N];
+		Arrays.fill(matchX, -1);
+		Arrays.fill(matchY, -1);
+	}
+
 	public World(List<DTNHost> hosts, int sizeX, int sizeY, 
 			double updateInterval, List<UpdateListener> updateListeners,
 			boolean simulateConnections, List<EventQueue> eventQueues) {
@@ -83,6 +184,15 @@ public class World {
 		this.scheduledUpdates = new ScheduledUpdatesQueue();
 		this.isCancelled = false;
 		this.isConSimulated = false;
+
+
+		Coord AP_1_STATION = new Coord(600,600);
+		Coord AP_2_STATION = new Coord(600,800);
+		AP_list.add(new AccessPoint(AP_1_STATION,500));
+		AP_list.add(new AccessPoint(AP_2_STATION,600));
+
+		init();
+
 
 		setNextEventQueue();
 		initSettings();
@@ -156,39 +266,45 @@ public class World {
 	 * Runs all external events that are due between the time when
 	 * this method is called and after one update interval.
 	 */
-	public void update () {
+	public float getDistance(Coord a,Coord b)
+	{
+		return (float) Math.sqrt(Math.pow(a.getX()-b.getX(),2)+Math.pow(a.getY()-b.getY(),2));
+	}
+	public void update ()
+	{
 
 		double runUntil = SimClock.getTime() + this.updateInterval;
-
 		System.out.println("=====================世界更新====================");
 		System.out.println("当前时间："+runUntil);
 
-		System.out.println("真实总线上的Message数量："+BROADCAST_BUS+",节点检测总线上的Message数量："+LISTEN_BUS);
-
-		/*总先状态发生改变*/
-		if(LAST_BROADCAST_BUS != BROADCAST_BUS) {
-			BROADCAST_BUS_DELAY ++;
-		}
-		/*总线状态改变，但还未被所有节点检测到*/
-		else if(BROADCAST_BUS_DELAY!=0)
+		int index =0;
+		for (DTNHost host: hosts)
 		{
-			/*所有节点检测到的总线状态需改变*/
-			if(BROADCAST_BUS_DELAY == DELAY_SET)
-			{
-				LISTEN_BUS = BROADCAST_BUS;
-				BROADCAST_BUS_DELAY = 0;
-			}
-			else{
-				BROADCAST_BUS_DELAY++;
+			if (!host.getName().startsWith("AP")) {
+				System.out.println("-----------------------");
+				System.out.println("当前节点："+ host.toString()+"，坐标为："+host.getLocation());
+				for (int j=0;j<N;j++) {
+					AccessPoint ap = AP_list.get(j/M);
+					float strength = ap.Strength / getDistance(host.getLocation(),ap.location);
+					float speed = (float) (Math.log(1+strength)/Math.log(2));
+					SPEED[index][j] = speed;
+				}
+				index++;
 			}
 		}
 
-		/*存储当前时刻总线信息*/
-		LAST_BROADCAST_BUS = BROADCAST_BUS;
+		float weight = maxWeightMatching();
+		System.out.println("最大下行速率和为：" + weight);
+		System.out.println("连接方案为：");
+		for (int i = 0; i < N; i++) {
+			if (matchX[i] != -1) {
+				int y = matchX[i]/M;
+				System.out.println("N" + i + " -> AP" + y);
+			}
+		}
 
-		setNextEventQueue();
+		init();
 
-		/* process all events that are due until next interval update */
 		while (this.nextQueueEventTime <= runUntil) {
 			simClock.setTime(this.nextQueueEventTime);
 			ExternalEvent ee = this.nextEventQueue.nextEvent();
@@ -196,26 +312,6 @@ public class World {
 			updateHosts(); // update all hosts after every event
 			setNextEventQueue();
 		}
-		System.out.println("<==========总线传输信息==========>");
-		for(Message m:BROADCAST_MESSAGE)
-		{
-			System.out.println(m);
-		}
-		System.out.println("<==========总线传输信息==========>");
-		System.out.println(" ");
-
-//		for (DTNHost host : hosts)
-//		{
-//			System.out.println("-----------------------");
-//			System.out.println(host);
-//			Collection<Message> existing_message =host.getMessageCollection();
-//			for(Message m: existing_message)
-//			{
-//
-//				System.out.println(m);
-//			}
-//			System.out.println("-----------------------");
-//		}
 
 
 		moveHosts(this.updateInterval);
