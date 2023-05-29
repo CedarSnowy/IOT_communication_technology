@@ -117,7 +117,7 @@ public class CBRConnection extends Connection {
 	 * Returns a String presentation of the connection.
 	 */
 	public String toString() {
-		return super.toString() + (isTransferring() ?  
+		return super.toString() + (isTransferring() ?
 				" until " + String.format("%.2f", this.transferDoneTime) : "");
 	}
 

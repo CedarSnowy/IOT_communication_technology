@@ -1,0 +1,20 @@
+Message stats for scenario csma_ca_scenario
+sim_time: 2203.0000
+created: 443
+started: 441
+relayed: 441
+aborted: 0
+dropped: 0
+removed: 440
+delivered: 441
+delivery_prob: 0.9955
+response_prob: 0.0000
+overhead_ratio: 0.0000
+latency_avg: 4.5488
+latency_med: 2.0000
+hopcount_avg: 1.0000
+hopcount_med: 1
+buffertime_avg: 588.5795
+buffertime_med: 116.0000
+rtt_avg: NaN
+rtt_med: NaN

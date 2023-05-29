@@ -96,8 +96,8 @@ public abstract class DTNSimUI {
 			for (int i=1, n = settings.getInt(NROF_REPORT_S); i<=n; i++){
 				String reportClass = settings.getSetting(REPORT_S + i);
 				addReport((Report)settings.createObject(REPORT_PAC + 
-						reportClass));	
-			}
+						reportClass));
+		}
 
 			double warmupTime = 0;
 			if (settings.contains(MM_WARMUP_S)) {

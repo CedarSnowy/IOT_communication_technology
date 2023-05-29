@@ -7,10 +7,11 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
-import sun.util.locale.LanguageTag;
-import util.Tuple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 /**
  * World contains all the nodes and is responsible for updating their
@@ -56,14 +57,6 @@ public class World {
 	private ScheduledUpdatesQueue scheduledUpdates;
 	private boolean simulateConOnce;
 	private boolean isConSimulated;
-
-	/**广播总线*/
-	public static ArrayList<Message>  BROADCAST_MESSAGE = new ArrayList<>();
-	public static int BROADCAST_BUS = 0;
-	public static int BROADCAST_BUS_DELAY = 0;
-	public static int DELAY_SET = 3 ;
-	public static int LAST_BROADCAST_BUS = 0;
-	public static int LISTEN_BUS = 0;
 
 	/**
 	 * Constructor.
@@ -157,34 +150,7 @@ public class World {
 	 * this method is called and after one update interval.
 	 */
 	public void update () {
-
 		double runUntil = SimClock.getTime() + this.updateInterval;
-
-		System.out.println("=====================世界更新====================");
-		System.out.println("当前时间："+runUntil);
-
-		System.out.println("真实总线上的Message数量："+BROADCAST_BUS+",节点检测总线上的Message数量："+LISTEN_BUS);
-
-		/*总先状态发生改变*/
-		if(LAST_BROADCAST_BUS != BROADCAST_BUS) {
-			BROADCAST_BUS_DELAY ++;
-		}
-		/*总线状态改变，但还未被所有节点检测到*/
-		else if(BROADCAST_BUS_DELAY!=0)
-		{
-			/*所有节点检测到的总线状态需改变*/
-			if(BROADCAST_BUS_DELAY == DELAY_SET)
-			{
-				LISTEN_BUS = BROADCAST_BUS;
-				BROADCAST_BUS_DELAY = 0;
-			}
-			else{
-				BROADCAST_BUS_DELAY++;
-			}
-		}
-
-		/*存储当前时刻总线信息*/
-		LAST_BROADCAST_BUS = BROADCAST_BUS;
 
 		setNextEventQueue();
 
@@ -196,27 +162,6 @@ public class World {
 			updateHosts(); // update all hosts after every event
 			setNextEventQueue();
 		}
-		System.out.println("<==========总线传输信息==========>");
-		for(Message m:BROADCAST_MESSAGE)
-		{
-			System.out.println(m);
-		}
-		System.out.println("<==========总线传输信息==========>");
-		System.out.println(" ");
-
-//		for (DTNHost host : hosts)
-//		{
-//			System.out.println("-----------------------");
-//			System.out.println(host);
-//			Collection<Message> existing_message =host.getMessageCollection();
-//			for(Message m: existing_message)
-//			{
-//
-//				System.out.println(m);
-//			}
-//			System.out.println("-----------------------");
-//		}
-
 
 		moveHosts(this.updateInterval);
 		simClock.setTime(runUntil);
@@ -227,8 +172,6 @@ public class World {
 		for (UpdateListener ul : this.updateListeners) {
 			ul.updated(this.hosts);
 		}
-
-
 	}
 
 	/**
@@ -303,10 +246,6 @@ public class World {
 	 */
 	public int getSizeY() {
 		return this.sizeY;
-	}
-
-	public double getUpdateInterval() {
-		return updateInterval;
 	}
 
 	/**

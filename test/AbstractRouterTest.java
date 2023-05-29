@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import org.junit.Test;
 import routing.MessageRouter;
 import core.Coord;
 import core.DTNHost;
@@ -102,7 +101,7 @@ public abstract class AbstractRouterTest extends TestCase {
 		assertEquals(from, mc.getLastFrom());
 		assertEquals(to, mc.getLastTo());
 	}
-
+	
 	protected void checkDelivered(DTNHost from, DTNHost to, String msgId,
 			boolean isFirstDelivery) {
 		if (isFirstDelivery) {

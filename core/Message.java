@@ -1,6 +1,6 @@
-/*
+/* 
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details.
+ * Released under GPLv3. See LICENSE.txt for details. 
  */
 package core;
 
@@ -19,7 +19,7 @@ public class Message implements Comparable<Message> {
 	 * Default=false. */
 	public static final String TTL_SECONDS_S = "Scenario.ttlSeconds";
 	private static boolean ttlAsSeconds = false;
-
+	
 	/** Value for infinite TTL of message */
 	public static final int INFINITE_TTL = -1;
 	private DTNHost from;
@@ -29,7 +29,7 @@ public class Message implements Comparable<Message> {
 	/** Size of the message (bytes) */
 	private int size;
 	/** List of nodes this message has passed */
-	private List<DTNHost> path;
+	private List<DTNHost> path; 
 	/** Next unique identifier to be given */
 	private static int nextUniqueId;
 	/** Unique ID of this message */
@@ -40,26 +40,44 @@ public class Message implements Comparable<Message> {
 	private double timeCreated;
 	/** Initial TTL of the message */
 	private int initTtl;
-
+	
 	/** if a response to this message is required, this is the size of the 
 	 * response message (or 0 if no response is requested) */
 	private int responseSize;
 	/** if this message is a response message, this is set to the request msg*/
 	private Message requestMsg;
-
+	
 	/** Container for generic message properties. Note that all values
 	 * stored in the properties should be immutable because only a shallow
 	 * copy of the properties is made when replicating messages */
 	private Map<String, Object> properties;
-
+	
 	/** Application ID of the application that created the message */
 	private String	appID;
+
+	private int timeOfSend = 0;   // 重传次数
+	public static enum FLAGS { REQUEST, ACK};
+	private FLAGS flag;  // 标志位
+
+	public int getTimeOfSend() {
+		return timeOfSend;
+	}
+	public void setTimeOfReSend(int timeOfSend) {
+		this.timeOfSend = timeOfSend;
+	}
+	public FLAGS getFlag() {
+		return flag;
+	}
+	public void setFlag(FLAGS flag) {
+		this.flag = flag;
+	}
+	public boolean isACK() { return this.flag == FLAGS.ACK; }
 
 	static {
 		reset();
 		DTNSim.registerForReset(Message.class.getCanonicalName());
 	}
-
+	
 	/**
 	 * Creates a new Message.
 	 * @param from Who the message is (originally) from
@@ -75,7 +93,7 @@ public class Message implements Comparable<Message> {
 		this.size = size;
 		this.path = new ArrayList<DTNHost>();
 		this.uniqueId = nextUniqueId;
-
+		
 		this.timeCreated = SimClock.getTime();
 		this.timeReceived = this.timeCreated;
 		this.initTtl = INFINITE_TTL;
@@ -83,11 +101,11 @@ public class Message implements Comparable<Message> {
 		this.requestMsg = null;
 		this.properties = null;
 		this.appID = null;
-
+		
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
 	}
-
+	
 	/**
 	 * Returns the node this message is originally from
 	 * @return the node this message is originally from
@@ -111,7 +129,7 @@ public class Message implements Comparable<Message> {
 	public String getId() {
 		return this.id;
 	}
-
+	
 	/**
 	 * Returns an ID that is unique per message instance 
 	 * (different for replicates too)
@@ -120,7 +138,7 @@ public class Message implements Comparable<Message> {
 	public int getUniqueId() {
 		return this.uniqueId;
 	}
-
+	
 	/**
 	 * Returns the size of the message (in bytes)
 	 * @return the size of the message
@@ -136,7 +154,7 @@ public class Message implements Comparable<Message> {
 	public void addNodeOnPath(DTNHost node) {
 		this.path.add(node);
 	}
-
+	
 	/**
 	 * Returns a list of nodes this message has passed so far
 	 * @return The list as vector
@@ -144,7 +162,7 @@ public class Message implements Comparable<Message> {
 	public List<DTNHost> getHops() {
 		return this.path;
 	}
-
+	
 	/**
 	 * Returns the amount of hops this message has passed
 	 * @return the amount of hops this message has passed
@@ -152,8 +170,8 @@ public class Message implements Comparable<Message> {
 	public int getHopCount() {
 		return this.path.size() -1;
 	}
-
-	/**
+	
+	/** 
 	 * Returns the time to live (in minutes or seconds, depending on the setting
 	 * {@link #TTL_SECONDS_S}) of the message or Integer.MAX_VALUE 
 	 * if the TTL is infinite. Returned value can be negative if the TTL has
@@ -167,14 +185,14 @@ public class Message implements Comparable<Message> {
 		else {
 			if (ttlAsSeconds) {
 				return (int)(this.initTtl -
-						(SimClock.getTime()-this.timeCreated) );
+						(SimClock.getTime()-this.timeCreated) );				
 			} else {
 				return (int)( ((this.initTtl * 60) -
 						(SimClock.getTime()-this.timeCreated)) /60.0 );
 			}
 		}
 	}
-
+	
 	/**
 	 * Sets the initial TTL (time-to-live) for this message. The initial
 	 * TTL is the TTL when the original message was created. The current TTL
@@ -184,7 +202,7 @@ public class Message implements Comparable<Message> {
 	public void setTtl(int ttl) {
 		this.initTtl = ttl;
 	}
-
+	
 	/**
 	 * Sets the time when this message was received.
 	 * @param time The time to set
@@ -192,7 +210,7 @@ public class Message implements Comparable<Message> {
 	public void setReceiveTime(double time) {
 		this.timeReceived = time;
 	}
-
+	
 	/**
 	 * Returns the time when this message was received
 	 * @return The time
@@ -200,7 +218,7 @@ public class Message implements Comparable<Message> {
 	public double getReceiveTime() {
 		return this.timeReceived;
 	}
-
+	
 	/**
 	 * Returns the time when this message was created
 	 * @return the time when this message was created
@@ -208,7 +226,7 @@ public class Message implements Comparable<Message> {
 	public double getCreationTime() {
 		return this.timeCreated;
 	}
-
+	
 	/**
 	 * If this message is a response to a request, sets the request message
 	 * @param request The request message
@@ -216,7 +234,7 @@ public class Message implements Comparable<Message> {
 	public void setRequest(Message request) {
 		this.requestMsg = request;
 	}
-
+	
 	/**
 	 * Returns the message this message is response to or null if this is not
 	 * a response message
@@ -225,7 +243,7 @@ public class Message implements Comparable<Message> {
 	public Message getRequest() {
 		return this.requestMsg;
 	}
-
+	
 	/**
 	 * Returns true if this message is a response message
 	 * @return true if this message is a response message
@@ -233,7 +251,7 @@ public class Message implements Comparable<Message> {
 	public boolean isResponse() {
 		return this.requestMsg != null;
 	}
-
+	
 	/**
 	 * Sets the requested response message's size. If size == 0, no response
 	 * is requested (default)
@@ -242,7 +260,7 @@ public class Message implements Comparable<Message> {
 	public void setResponseSize(int size) {
 		this.responseSize = size;
 	}
-
+	
 	/**
 	 * Returns the size of the requested response message or 0 if no response
 	 * is requested.
@@ -251,12 +269,13 @@ public class Message implements Comparable<Message> {
 	public int getResponseSize() {
 		return responseSize;
 	}
-
-	@Override
-	public String toString() {
-		return "Message [from=" + from + ", to=" + to + ", id=" + id
-				+ ", path=" + path + ", timeReceived=" + timeReceived
-				+ ", timeCreated=" + timeCreated + "]";
+	
+	/**
+	 * Returns a string representation of the message
+	 * @return a string representation of the message
+	 */
+	public String toString () {
+		return id;
 	}
 
 	/**
@@ -272,7 +291,8 @@ public class Message implements Comparable<Message> {
 		this.requestMsg  = m.requestMsg;
 		this.initTtl = m.initTtl;
 		this.appID = m.appID;
-
+		this.flag = m.flag;
+		
 		if (m.properties != null) {
 			Set<String> keys = m.properties.keySet();
 			for (String key : keys) {
@@ -280,7 +300,7 @@ public class Message implements Comparable<Message> {
 			}
 		}
 	}
-
+	
 	/**
 	 * Adds a generic property for this message. The key can be any string but 
 	 * it should be such that no other class accidently uses the same value.
@@ -294,13 +314,13 @@ public class Message implements Comparable<Message> {
 	public void addProperty(String key, Object value) throws SimError {
 		if (this.properties != null && this.properties.containsKey(key)) {
 			/* check to prevent accidental name space collisions */
-			throw new SimError("Message " + this + " already contains value " +
+			throw new SimError("Message " + this + " already contains value " + 
 					"for a key " + key);
 		}
-
+		
 		this.updateProperty(key, value);
 	}
-
+	
 	/**
 	 * Returns an object that was stored to this message using the given
 	 * key. If such object is not found, null is returned.
@@ -313,7 +333,7 @@ public class Message implements Comparable<Message> {
 		}
 		return this.properties.get(key);
 	}
-
+	
 	/**
 	 * Updates a value for an existing property. For storing the value first 
 	 * time, {@link #addProperty(String, Object)} should be used which
@@ -326,11 +346,11 @@ public class Message implements Comparable<Message> {
 			/* lazy creation to prevent performance overhead for classes
 			   that don't use the property feature  */
 			this.properties = new HashMap<String, Object>();
-		}
+		}		
 
 		this.properties.put(key, value);
 	}
-
+	
 	/**
 	 * Returns a replicate of this message (identical except for the unique id)
 	 * @return A replicate of the message
@@ -340,7 +360,7 @@ public class Message implements Comparable<Message> {
 		m.copyFrom(this);
 		return m;
 	}
-
+	
 	/**
 	 * Compares two messages by their ID (alphabetically).
 	 * @see String#compareTo(String)
@@ -348,7 +368,7 @@ public class Message implements Comparable<Message> {
 	public int compareTo(Message m) {
 		return toString().compareTo(m.toString());
 	}
-
+	
 	/**
 	 * Resets all static fields to default values
 	 */
@@ -371,10 +391,5 @@ public class Message implements Comparable<Message> {
 	public void setAppID(String appID) {
 		this.appID = appID;
 	}
-
-	public static void initPath(Message m)
-	{
-		m.path.subList(1, m.path.size()).clear();
-	}
-
+	
 }
